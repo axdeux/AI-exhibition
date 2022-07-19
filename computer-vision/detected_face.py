@@ -15,6 +15,7 @@ def rectangle_comparison(rectangle_list1, rectangle_list2):
     # list to store matching rectangles
     matches = []
 
+    indexes = np.arange(len(rectangle_list2))
     # iterating over coordinates of first list of rectangles
     for i, (x1,y1,w1,h1) in enumerate(rectangle_list1):
 
@@ -24,27 +25,37 @@ def rectangle_comparison(rectangle_list1, rectangle_list2):
         # Finding the center coordinate of the rectangle
         center1 = vec(x1,y1) + vec(w1 // 2, h1 // 2)
 
-        # Iterating over second rectangle list
-        for (x2,y2,w2,h2) in rectangle_list2:
+        # 
+        for j in indexes:
+            (x2, y2, w2, h2)=rectangle_list2[j]
+            center2 = vec(x2, y2) + vec(w2 // 2, h2 // 2)
 
-            # Center of second rectangles
-            center2 = vec(x2,y2) + vec(w2 // 2, h2 // 2)
-
-            # Calculate distance between centers
             dist = np.linalg.norm(center1 - center2)
             distances.append(dist)
+
+        # Iterating over second rectangle list
+        # for (x2,y2,w2,h2) in rectangle_list2:
+
+        #     # Center of second rectangles
+        #     center2 = vec(x2,y2) + vec(w2 // 2, h2 // 2)
+
+        #     # Calculate distance between centers
+        #     dist = np.linalg.norm(center1 - center2)
+        #     distances.append(dist)
 
         # Choose the index of the closest rectangle
         choice = np.argmin(distances)
 
         # Store a tuple of the combination of indices
-        matches.append((i, choice))
+        matches.append((i, indexes[choice]))
 
         # Remove previous choice
-        rectangle_list2.pop(choice)
+        indexes = np.delete(indexes, choice)
+        print(indexes, choice)
+
 
         # Iterate till rectangle_list2 is exhausted.
-        if len(rectangle_list2) < 1:
+        if len(indexes) == 0:
             break
 
     return matches
@@ -57,6 +68,6 @@ class Face:
 
 if __name__ == '__main__':
     rects1 = [(1, 1, 1, 1), (1.5, 1.5, 1, 1), (-1, 0, 2.1, 2)]
-    rects2 = [(3, 3, 1, 1), (2, 2, 1, 1)]
+    rects2 = [(3, 3, 1, 1), (2, 2, 1, 1), (5, 3, 1.5, 1.5)]
 
-    rectangle_comparison(rects1, rects2)
+    print(rectangle_comparison(rects1, rects2))
