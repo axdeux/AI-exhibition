@@ -4,6 +4,7 @@ import os
 import sys
 import detection
 from deepface import DeepFace
+from retinaface import RetinaFace
 
 
 
@@ -27,30 +28,40 @@ people[undefined_person] = ['unknown', 'unknown', 'unknown']
 
 # Initialize and start realtime video capture
 cam = cv2.VideoCapture(0)
-cam.set(3, 640) # set video widht
-cam.set(4, 480) # set video height
+cam.set(3, int(640*3/2)) # set video widht
+cam.set(4, int(480*3/2)) # set video height
 font = cv2.FONT_HERSHEY_SIMPLEX
 count2 = 0
 while True:
     ret, img = cam.read()
     img = cv2.flip(img, 1) # mirror
     faces,gray = detection.get_faces(img, face_detector)
+    state_estimation(img, faces) #function or class should do what comments below do
+    # count1 += 1
+    # if count1 > face_analying_time:
+        # face_analyzed_pos = []
+        # face_recognition_pos = []
+    #     faces_in_frame = RetinaFace.extract_faces(img)
+    #     estimation = DeepFace.analyze(faces_in_frame, actions = ['age', 'gender', 'emotion'], enforce_detection=False)
+    #     count1 = 0
+        # for pos in faces:
+        #     face_recognition_pos.append(pos)
+        # for face in estimation:
+        #     face_analyzed_pos.append(tuple(map(int, face['region'].values())))
+        # rectangle_comparison(face_recognition_pos, face_analyzed_pos)
+        # people[person_name] = [estimation['age'], estimation['gender'],estimation['dominant_emotion']]
+
+    # else:
+    #     pass
     for(x,y,w,h) in faces:
+        
         cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 2)
         person_id, confidence = recognizer.predict(gray[y:y+h,x:x+w])
         # Check if confidence is less them 100 ==> "0" is perfect match 
         if ((100 - confidence) > confidence_threshold):
             person_name = person_id2name[str(person_id)]
             confidence = "  {0}%".format(round(100 - confidence))
-            count1 += 1
-            if count1 > face_analying_time:
-                estimation = DeepFace.analyze(img, actions = ['age', 'gender', 'emotion'], enforce_detection=False)
-                count2 +=1
-                print(estimation, count2)
-                people[person_name] = [estimation['age'], estimation['gender'],estimation['dominant_emotion']]
-                count1 = 0
-            else:
-                pass
+            
         else:
             person_name = undefined_person
             confidence = "  {0}%".format(round(100 - confidence))
