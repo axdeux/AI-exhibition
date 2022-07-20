@@ -1,4 +1,6 @@
 import numpy as np
+from retinaface import RetinaFace
+from deepface import DeepFace
 
 def vec(x,y):
     return np.array([x,y])
@@ -17,6 +19,7 @@ def rectangle_comparison(rectangle_list1, rectangle_list2):
 
     indexes = np.arange(len(rectangle_list2))
     # iterating over coordinates of first list of rectangles
+    # print(rectangle_list1)
     for i, (x1,y1,w1,h1) in enumerate(rectangle_list1):
 
         # List for storing calculated distances
@@ -27,6 +30,7 @@ def rectangle_comparison(rectangle_list1, rectangle_list2):
 
         # 
         for j in indexes:
+            print(rectangle_list2[j])
             (x2, y2, w2, h2)=rectangle_list2[j]
             center2 = vec(x2, y2) + vec(w2 // 2, h2 // 2)
 
@@ -51,20 +55,48 @@ def rectangle_comparison(rectangle_list1, rectangle_list2):
 
         # Remove previous choice
         indexes = np.delete(indexes, choice)
-        print(indexes, choice)
+        # print(indexes, choice)
 
 
         # Iterate till rectangle_list2 is exhausted.
         if len(indexes) == 0:
             break
+    
+    return matches 
 
-    return matches
+def face_analyzing(img, face_pos):
+    faces_found = RetinaFace.extract_faces(img)
+    
+    estimation = DeepFace.analyze(faces_found, actions = ['age', 'gender', 'emotion'], enforce_detection=False)
+    # people[person_name] = [estimation['age'], estimation['gender'],estimation['dominant_emotion']]
+    face_analyed_pos = []
+    print(estimation)
+    for face in estimation:
+        face_analyed_pos.append((estimation[face]['region']['x'], estimation[face]['region']['y'], estimation[face]['region']['w'], estimation[face]['region']['h']))
+    matching_faces = rectangle_comparison(face_pos, face_analyed_pos)
+    estimated_faces = []
+    for face in estimation:
+        estimated_faces.append(face)
+    
+    ordered_faces = []
+    for (i,j) in matching_faces:
+        ordered_faces.append(estimated_faces[j])
+
+    print(ordered_faces, 'Ordered faces')
+    
+    return estimation, ordered_faces
+
+
+    
 
 # identified = [Face(person_id, analyzed_dict) for person_id, analyzed_dict in zip()]
 
 class Face:
     def __init__(self, person_id, analyzed_dict):
         pass
+
+
+    
 
 if __name__ == '__main__':
     rects1 = [(1, 1, 1, 1), (1.5, 1.5, 1, 1), (-1, 0, 2.1, 2)]

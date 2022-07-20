@@ -2,7 +2,7 @@ import cv2
 import os
 import detection
 
-number_of_faces = 30
+number_of_faces = 90
 data_folder = detection.data_dir
 face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 

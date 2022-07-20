@@ -5,6 +5,7 @@ import sys
 import detection
 from deepface import DeepFace
 from retinaface import RetinaFace
+import detected_face
 
 
 
@@ -16,8 +17,8 @@ recognizer.read(detection.model_file)
 person_id2name = detection.read_person_names(detection.person_names_file)
 undefined_person = 'Unknown'
 confidence_threshold = 20
-count1 = 50
-face_analying_time = 50
+count1 = 1000
+face_analyzing_time = 50
 people = dict()
 for names in person_id2name.values():
     people[names] = ['unknown', 'unknown', 'unknown']
@@ -31,29 +32,20 @@ cam = cv2.VideoCapture(0)
 cam.set(3, int(640*3/2)) # set video widht
 cam.set(4, int(480*3/2)) # set video height
 font = cv2.FONT_HERSHEY_SIMPLEX
-count2 = 0
+
 while True:
     ret, img = cam.read()
     img = cv2.flip(img, 1) # mirror
-    faces,gray = detection.get_faces(img, face_detector)
-    state_estimation(img, faces) #function or class should do what comments below do
-    # count1 += 1
-    # if count1 > face_analying_time:
-        # face_analyzed_pos = []
-        # face_recognition_pos = []
-    #     faces_in_frame = RetinaFace.extract_faces(img)
-    #     estimation = DeepFace.analyze(faces_in_frame, actions = ['age', 'gender', 'emotion'], enforce_detection=False)
-    #     count1 = 0
-        # for pos in faces:
-        #     face_recognition_pos.append(pos)
-        # for face in estimation:
-        #     face_analyzed_pos.append(tuple(map(int, face['region'].values())))
-        # rectangle_comparison(face_recognition_pos, face_analyzed_pos)
-        # people[person_name] = [estimation['age'], estimation['gender'],estimation['dominant_emotion']]
+    faces,gray = detection.get_faces(img, face_detector)    #coordinates for box around detected face
+   
 
-    # else:
-    #     pass
-    for(x,y,w,h) in faces:
+    count1 +=1
+    if count1 > face_analyzing_time:
+        state_estimation, ordered_faces = detected_face.face_analyzing(img, faces)
+        count1 = 0
+    
+    
+    for index, (x,y,w,h) in enumerate(faces):
         
         cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 2)
         person_id, confidence = recognizer.predict(gray[y:y+h,x:x+w])
@@ -61,13 +53,17 @@ while True:
         if ((100 - confidence) > confidence_threshold):
             person_name = person_id2name[str(person_id)]
             confidence = "  {0}%".format(round(100 - confidence))
+            if count1 == 0:
+                people[person_name] = [state_estimation[ordered_faces[index]]['age'], state_estimation[ordered_faces[index]]['gender'],state_estimation[ordered_faces[index]]['dominant_emotion']]
             
         else:
             person_name = undefined_person
             confidence = "  {0}%".format(round(100 - confidence))
-        if isinstance(estimation, dict):
-            x1, y1, w1, h1 = map(int, estimation['region'].values())
-            cv2.rectangle(img, (x1,y1), (x1+w1,y1+h1), (0, 0, 255), 2)
+
+        
+        # if isinstance(estimation, dict):
+        #     x1, y1, w1, h1 = map(int, estimation['region'].values())
+        #     cv2.rectangle(img, (x1,y1), (x1+w1,y1+h1), (0, 0, 255), 2)
         cv2.putText(img, 'Age: '+ str(people[person_name][0]), (x+w,y+15), font, 0.5, (0,0,0), 2)
         cv2.putText(img, 'Gender: '+ str(people[person_name][1]), (x+w,y+30), font, 0.5, (0,0,0), 2)
         cv2.putText(img, 'Emotion: '+ str(people[person_name][2]), (x+w,y+45), font, 0.5, (0,0, 0), 2)
