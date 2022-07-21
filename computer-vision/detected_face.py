@@ -65,21 +65,30 @@ def rectangle_comparison(rectangle_list1, rectangle_list2):
     return matches 
 
 def face_analyzing(img, face_pos):
+    """Function that estimates age, gender and emotion of face. Additionally orders data following other face recognition
+
+    Inputs are the frame of intrest and the position of the box framing the faces found by the other face recognition in shape of [(x1,y1,w1,h1), (x2,y2,w2,h2)]
+
+    Returns:
+        Dictionary of estimates of age, gender and emotion, and list of faces found ordered
+    """
+    #finds faces within frame
     faces_found = RetinaFace.extract_faces(img)
     
-    estimation = DeepFace.analyze(faces_found, actions = ['age', 'gender', 'emotion'], enforce_detection=False)
-    # people[person_name] = [estimation['age'], estimation['gender'],estimation['dominant_emotion']]
+    #estimates age, gender and emotion of face found
+    estimation = DeepFace.analyze(faces_found, actions = ['age', 'gender', 'emotion'], enforce_detection=False) 
+    
     face_analyed_pos = []
-    print(estimation)
-    for face in estimation:
+    # print(estimation)
+    for face in estimation: #fetches the position of the faces found by retina
         face_analyed_pos.append((estimation[face]['region']['x'], estimation[face]['region']['y'], estimation[face]['region']['w'], estimation[face]['region']['h']))
-    matching_faces = rectangle_comparison(face_pos, face_analyed_pos)
-    estimated_faces = []
-    for face in estimation:
+    matching_faces = rectangle_comparison(face_pos, face_analyed_pos)   #finds which data correponds with which face
+    estimated_faces = []    
+    for face in estimation: 
         estimated_faces.append(face)
     
     ordered_faces = []
-    for (i,j) in matching_faces:
+    for (i,j) in matching_faces:    #reorders faces to correspond
         ordered_faces.append(estimated_faces[j])
 
     print(ordered_faces, 'Ordered faces')

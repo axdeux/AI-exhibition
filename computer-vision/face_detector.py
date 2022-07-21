@@ -29,7 +29,7 @@ people[undefined_person] = ['unknown', 'unknown', 'unknown']
 
 # Initialize and start realtime video capture
 cam = cv2.VideoCapture(0)
-cam.set(3, int(640*3/2)) # set video widht
+cam.set(3, int(640*3/2)) # set video width
 cam.set(4, int(480*3/2)) # set video height
 font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -41,7 +41,7 @@ while True:
 
     count1 +=1
     if count1 > face_analyzing_time:
-        state_estimation, ordered_faces = detected_face.face_analyzing(img, faces)
+        state_estimation, ordered_faces = detected_face.face_analyzing(img, faces) #estimating age, gender and emotion and orders after faces found in line 39
         count1 = 0
     
     
@@ -54,16 +54,17 @@ while True:
             person_name = person_id2name[str(person_id)]
             confidence = "  {0}%".format(round(100 - confidence))
             if count1 == 0:
-                people[person_name] = [state_estimation[ordered_faces[index]]['age'], state_estimation[ordered_faces[index]]['gender'],state_estimation[ordered_faces[index]]['dominant_emotion']]
+                if len(ordered_faces) < 1:  #skips if no faces found by retina
+                    pass
+                else:   #updates estimates about person
+                    people[person_name] = [state_estimation[ordered_faces[index]]['age'], state_estimation[ordered_faces[index]]['gender'],state_estimation[ordered_faces[index]]['dominant_emotion']]
             
         else:
             person_name = undefined_person
             confidence = "  {0}%".format(round(100 - confidence))
 
         
-        # if isinstance(estimation, dict):
-        #     x1, y1, w1, h1 = map(int, estimation['region'].values())
-        #     cv2.rectangle(img, (x1,y1), (x1+w1,y1+h1), (0, 0, 255), 2)
+        #Text display
         cv2.putText(img, 'Age: '+ str(people[person_name][0]), (x+w,y+15), font, 0.5, (0,0,0), 2)
         cv2.putText(img, 'Gender: '+ str(people[person_name][1]), (x+w,y+30), font, 0.5, (0,0,0), 2)
         cv2.putText(img, 'Emotion: '+ str(people[person_name][2]), (x+w,y+45), font, 0.5, (0,0, 0), 2)
