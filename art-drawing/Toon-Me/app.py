@@ -45,16 +45,16 @@ import torchvision.transforms as T
 import cv2
 
 cap = cv2.VideoCapture(0) # video capture source camera (Here webcam of laptop) 
-# ret,frame = cap.read() # return a single frame in variable `frame`
+
 cap_pic = True
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 while cap_pic == True:
     ret,frame = cap.read() 
-    cv2.imshow('Press spacebar to capture image',frame) #display the captured image
+    cv2.imshow('Press spacebar to capture image',frame) #display the video image
     k = cv2.waitKey(33)
     if k == 32: #save on pressing spacebar 
-        cv2.imwrite('img1.jpg',frame)
+        cv2.imwrite('original_img.jpg',frame)   #save frame
         cap.release()
         cv2.destroyAllWindows()
         cap_pic = False
@@ -136,9 +136,7 @@ def add_margin(pil_img, top, right, bottom, left, color):
 
 # path = Path(".") 
 
-path = "." 
 
-learn = load_learner(path, 'ArtLine_920.pkl') 
 
 # MODEL_URL = "https://www.dropbox.com/s/rccnrle6y88wcf5/Toonme_new_820.pkl?dl=1" 
 
@@ -146,13 +144,11 @@ learn = load_learner(path, 'ArtLine_920.pkl')
 
 # path = Path(".") 
 
-learn_c = load_learner(path, 'Toon-Me_820.pkl') 
+
 
 # @param {type:"string"} 
 
-
-
-img = PIL.Image.open('img1.jpg') 
+img = PIL.Image.open('original_img.jpg') 
 
 im_new = add_margin(img, 150, 150, 150, 150, (255, 255, 255)) 
 
@@ -162,22 +158,54 @@ img = open_image("test.jpg")
 
 show_image(img, figsize=(10, 10), interpolation='nearest') 
 
-p, img_hr, b = learn.predict(img) 
+def comicstyle_blackwhite(img):
+    """Function generates comic style image
+    Input is image
 
-x = np.minimum(np.maximum(image2np(img_hr.data*255), 0), 255).astype(np.uint8) 
+    returns:
+        comic style black and white image 
+    """
+    path = "." 
+    learn = load_learner(path, 'ArtLine_920.pkl')
 
-PIL.Image.fromarray(x).save("tes.jpg", quality=95) 
+    p, img_hr, b = learn.predict(img) 
 
-img = open_image("tes.jpg") 
-# img = Image.open('tes.jpg')
+    return img_hr
 
-# img.show()
+def comicstyle_color(img):
+    """Function generates comic style colored image
+    Input is image
+
+    returns:
+        comic style colored image 
+    """
+    path = '.'
+    learn_c = load_learner(path, 'Toon-Me_820.pkl')
+
+    p, img_hr, b = learn_c.predict(img) 
+
+    return img_hr
 
 
-display_img = cv2.imread('tes.jpg')
+def run_style(image):
+    x = np.minimum(np.maximum(image2np(image.data*255), 0), 255).astype(np.uint8) 
 
-while True:
-    cv2.imshow('Cartoonstyle image | press esc to exit', display_img)
-    k = cv2.waitKey(5) & 0xff # Press 'ESC' for exiting video
-    if k == 27:
-        break
+    PIL.Image.fromarray(x).save("comic_style_img.jpg", quality=95) #save image
+
+
+    display_img = cv2.imread('comic_style_img.jpg')
+
+    while True:
+        cv2.imshow('Cartoonstyle image | press esc to exit', display_img)
+        k = cv2.waitKey(5) & 0xff # Press 'ESC' for exiting video
+        if k == 27:
+            break
+
+
+# image_style_c = comicstyle_color(img)
+# run_style(image_style_c)
+
+
+
+image_style = comicstyle_blackwhite(img)
+run_style(image_style)
