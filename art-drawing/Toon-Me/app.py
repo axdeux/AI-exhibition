@@ -149,6 +149,7 @@ def add_margin(pil_img, top, right, bottom, left, color):
 
 
 # @param {type:"string"} 
+path = '.'
 
 img = PIL.Image.open('original_img.jpg') 
 
@@ -166,12 +167,13 @@ def comicstyle_blackwhite(img):
     returns:
         comic style black and white image 
     """
-    path = "." 
     learn = load_learner(path, 'ArtLine_920.pkl')
 
     p, img_hr, b = learn.predict(img) 
+    x = np.minimum(np.maximum(image2np(img_hr.data*255), 0), 255).astype(np.uint8) 
 
-    return img_hr
+    PIL.Image.fromarray(x).save("comic_style_blackwhite.jpg", quality=95) #save image
+    
 
 def comicstyle_color(img):
     """Function generates comic style colored image
@@ -179,21 +181,21 @@ def comicstyle_color(img):
     returns:
         comic style colored image 
     """
-    path = '.'
     learn_c = load_learner(path, 'Toon-Me_820.pkl')
-
     p, img_hr, b = learn_c.predict(img) 
+    x = np.minimum(np.maximum(image2np(img_hr.data*255), 0), 255).astype(np.uint8) 
 
-    return img_hr
+    PIL.Image.fromarray(x).save("comic_style_color.jpg", quality=95) #save image
 
+def run_style(image_taken, color=False):
 
-def run_style(image):
-    x = np.minimum(np.maximum(image2np(image.data*255), 0), 255).astype(np.uint8) 
+    if color == False:
+        comicstyle_blackwhite(image_taken)
+        display_img = cv2.imread('comic_style_blackwhite.jpg')
 
-    PIL.Image.fromarray(x).save("comic_style_img.jpg", quality=95) #save image
-
-
-    display_img = cv2.imread('comic_style_img.jpg')
+    if color == True:
+        comicstyle_color(image_taken)
+        display_img = cv2.imread('comic_style_color.jpg')
 
     while True:
         cv2.imshow('Cartoonstyle image | press esc to exit | press s to save image', display_img)
@@ -201,17 +203,15 @@ def run_style(image):
         if k == ord('s'):
             cv2.imwrite('Comicstyle_image.jpg',display_img)   #save comic style image
         if k == 27:
+            if color == False:
+                os.remove('comic_style_blackwhite.jpg')
+            if color == True:
+                os.remove('comic_style_color.jpg')
             break
 
 
-# image_style_c = comicstyle_color(img)
-# run_style(image_style_c)
+run_style(img, color=False) 
 
 
-
-image_style = comicstyle_blackwhite(img)
-run_style(image_style)
-
-os.remove('comic_style_img.jpg')
 os.remove('original_img.jpg')
 os.remove('test.jpg')
