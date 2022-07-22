@@ -44,6 +44,8 @@ import torchvision.transforms as T
 
 import cv2
 
+import os
+
 cap = cv2.VideoCapture(0) # video capture source camera (Here webcam of laptop) 
 
 cap_pic = True
@@ -161,7 +163,6 @@ show_image(img, figsize=(10, 10), interpolation='nearest')
 def comicstyle_blackwhite(img):
     """Function generates comic style image
     Input is image
-
     returns:
         comic style black and white image 
     """
@@ -175,7 +176,6 @@ def comicstyle_blackwhite(img):
 def comicstyle_color(img):
     """Function generates comic style colored image
     Input is image
-
     returns:
         comic style colored image 
     """
@@ -196,8 +196,10 @@ def run_style(image):
     display_img = cv2.imread('comic_style_img.jpg')
 
     while True:
-        cv2.imshow('Cartoonstyle image | press esc to exit', display_img)
+        cv2.imshow('Cartoonstyle image | press esc to exit | press s to save image', display_img)
         k = cv2.waitKey(5) & 0xff # Press 'ESC' for exiting video
+        if k == ord('s'):
+            cv2.imwrite('Comicstyle_image.jpg',display_img)   #save comic style image
         if k == 27:
             break
 
@@ -209,3 +211,7 @@ def run_style(image):
 
 image_style = comicstyle_blackwhite(img)
 run_style(image_style)
+
+os.remove('comic_style_img.jpg')
+os.remove('original_img.jpg')
+os.remove('test.jpg')
