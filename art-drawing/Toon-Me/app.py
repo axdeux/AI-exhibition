@@ -175,17 +175,20 @@ def comicstyle_blackwhite(img):
     PIL.Image.fromarray(x).save("comic_style_blackwhite.jpg", quality=95) #save image
     
 
-def comicstyle_color(img):
+def comicstyle_color(img_taken):
     """Function generates comic style colored image
     Input is image
     returns:
         comic style colored image 
     """
+    # comicstyle_blackwhite(img_taken)
+    # blackwhite_img = PIL.Image.open('comic_style_blackwhite.jpg') 
+    
     learn_c = load_learner(path, 'Toon-Me_820.pkl')
-    p, img_hr, b = learn_c.predict(img) 
-    x = np.minimum(np.maximum(image2np(img_hr.data*255), 0), 255).astype(np.uint8) 
+    p, img_hr, b = learn_c.predict(img_taken)   #replace img_taken with blackwhite_img????
 
-    PIL.Image.fromarray(x).save("comic_style_color.jpg", quality=95) #save image
+    x = np.minimum(np.maximum(image2np(img_hr.data*255), 0), 255).astype(np.uint8) 
+    PIL.Image.fromarray(np.asarray(x)).save("comic_style_color.jpg", quality=95) #save image
 
 def run_style(image_taken, color=False):
 
