@@ -1,61 +1,29 @@
 import fastai 
-
 from fastai.vision import * 
-
 from fastai.utils.mem import * 
-
 from fastai.vision import open_image, load_learner, image, torch 
-
 import numpy as np 
-
 import urllib.request 
-
 import PIL.Image 
-
 from io import BytesIO 
-
 import torchvision.transforms as T 
-
 from PIL import Image 
-
 import requests 
-
 from io import BytesIO 
-
-import fastai 
-
-from fastai.vision import * 
-
-from fastai.utils.mem import * 
-
-from fastai.vision import open_image, load_learner, image, torch 
-
-import numpy as np 
-
-import urllib.request 
-
-import PIL.Image 
-
-from PIL import Image 
-
-from io import BytesIO 
-
-import torchvision.transforms as T 
 
 import cv2
-
+import matplotlib.pyplot as plt
 import os
 
 cap = cv2.VideoCapture(0) # video capture source camera (Here webcam of laptop) 
 
 cap_pic = True
-font = cv2.FONT_HERSHEY_SIMPLEX
 
-while cap_pic == True:
+while cap_pic == True: #camerafeed
     ret,frame = cap.read() 
     cv2.imshow('Press spacebar to capture image',frame) #display the video image
     k = cv2.waitKey(33)
-    if k == 32: #save on pressing spacebar 
+    if k == 32: #capture image on pressing spacebar 
         cv2.imwrite('original_img.jpg',frame)   #save frame
         cap.release()
         cv2.destroyAllWindows()
@@ -66,9 +34,13 @@ while cap_pic == True:
 
 
 
+
  
 
 class FeatureLoss(nn.Module): 
+    """
+    Class is made by creator of ToonMe and has been not edited by us
+    """
 
     def __init__(self, m_feat, layer_ids, layer_wgts): 
 
@@ -130,36 +102,18 @@ def add_margin(pil_img, top, right, bottom, left, color):
 
     return result 
 
- 
 
-# MODEL_URL = "https://www.dropbox.com/s/04suaimdpru76h3/ArtLine_920.pkl?dl=1 " 
-
-# urllib.request.urlretrieve(MODEL_URL, "ArtLine_920.pkl") 
-
-# path = Path(".") 
-
-
-
-# MODEL_URL = "https://www.dropbox.com/s/rccnrle6y88wcf5/Toonme_new_820.pkl?dl=1" 
-
-# urllib.request.urlretrieve(MODEL_URL, "Toonme_new_820.pkl") 
-
-# path = Path(".") 
-
-
-
-# @param {type:"string"} 
 path = '.'
 
-img = PIL.Image.open('original_img.jpg') 
+img = PIL.Image.open('original_img.jpg').convert("RGB") #get captured image
 
 im_new = add_margin(img, 150, 150, 150, 150, (255, 255, 255)) 
 
-im_new.save("test.jpg", quality=95) 
+im_new.save("test.jpg", quality=95)     #save version with margin
 
 img = open_image("test.jpg") 
 
-show_image(img, figsize=(10, 10), interpolation='nearest') 
+
 
 def comicstyle_blackwhite(img):
     """Function generates comic style image
@@ -167,9 +121,9 @@ def comicstyle_blackwhite(img):
     returns:
         comic style black and white image 
     """
-    learn = load_learner(path, 'ArtLine_920.pkl')
+    learn = load_learner(path, 'ArtLine_920.pkl')    #load learner from comicstyle model
 
-    p, img_hr, b = learn.predict(img) 
+    p, img_hr, b = learn.predict(img)   #create comicstyle image
     x = np.minimum(np.maximum(image2np(img_hr.data*255), 0), 255).astype(np.uint8) 
 
     PIL.Image.fromarray(x).save("comic_style_blackwhite.jpg", quality=95) #save image
@@ -181,12 +135,13 @@ def comicstyle_color(img_taken):
     returns:
         comic style colored image 
     """
-    # comicstyle_blackwhite(img_taken)
-    # blackwhite_img = PIL.Image.open('comic_style_blackwhite.jpg') 
+    comicstyle_blackwhite(img_taken)    #load grey comicstyle image
+    blackwhite_img = open_image('comic_style_blackwhite.jpg') 
     
-    learn_c = load_learner(path, 'Toon-Me_820.pkl')
-    p, img_hr, b = learn_c.predict(img_taken)   #replace img_taken with blackwhite_img????
-
+    learn_c = load_learner(path, 'Toon-Me_820.pkl') #adds color to comicstyle image
+    p, img_hr, b = learn_c.predict(blackwhite_img)   #replace img_taken with blackwhite_img????
+    # plt.imshow(img_hr.permute(1, 2, 0), interpolation='nearest')
+    # plt.show()
     x = np.minimum(np.maximum(image2np(img_hr.data*255), 0), 255).astype(np.uint8) 
     PIL.Image.fromarray(np.asarray(x)).save("comic_style_color.jpg", quality=95) #save image
 
@@ -201,20 +156,20 @@ def run_style(image_taken, color=False):
         display_img = cv2.imread('comic_style_color.jpg')
 
     while True:
-        cv2.imshow('Cartoonstyle image | press esc to exit | press s to save image', display_img)
+        cv2.imshow('Cartoonstyle image | press esc to exit | press s to save image', display_img)   #show image
         k = cv2.waitKey(5) & 0xff # Press 'ESC' for exiting video
-        if k == ord('s'):
-            cv2.imwrite('Comicstyle_image.jpg',display_img)   #save comic style image
+        if k == ord('s'):   #save image by pressing s
+            cv2.imwrite('Comicstyle_image.jpg', display_img)
         if k == 27:
-            if color == False:
+            if color == False:  #remove images
                 os.remove('comic_style_blackwhite.jpg')
             if color == True:
                 os.remove('comic_style_color.jpg')
             break
 
 
-run_style(img, color=False) 
+run_style(img, color=True) 
 
-
+#removes images used in between generating comicstyle images
 os.remove('original_img.jpg')
 os.remove('test.jpg')
