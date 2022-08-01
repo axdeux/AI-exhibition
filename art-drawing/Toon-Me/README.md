@@ -1,5 +1,5 @@
 # Art-drawing
-### using opencv´s haarcascade face recognizer in conjunction with deepface´s analyzing features.
+
 
 ---
 ## What is this?
@@ -31,5 +31,15 @@ $ pip install -r requirements.txt
 Original image:
 ![Original image of superman](Example_images/Superman.jpg)
 
-Comic style image:
+Comic style images:
 ![Comic image of superman](Example_images/Superman_comic.jpg)
+
+
+**Hardware requirements**
+<p>The program was put together an run on a laptop.<br>
+The program can be run on a computer with the minimum spesifications:<br>
+Processor: Intel Core i3-5005U CPU<br>
+Ram: 8.00GB<br>
+Platform: Windows x64<br>
+Graphic card: None<br>
+Disc space: 800 MB<p>
